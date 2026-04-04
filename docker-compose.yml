@@ -1,0 +1,4 @@
+include:
+  - docker/postgres.yml
+  - docker/kafka.yml
+  - docker/qdrant.yml
