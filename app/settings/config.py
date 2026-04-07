@@ -1,7 +1,7 @@
 from app.settings.kafka import KafkaConfig
-from app.settings.llm import LLMConfig
 from app.settings.postgres import PostgresConfig
 from app.settings.qdrant import QdrantConfig
+from app.settings.yandex_cloud import YandexCloudConfig
 
 
 class AppConfig:
@@ -9,4 +9,4 @@ class AppConfig:
         self.postgres = PostgresConfig()
         self.kafka = KafkaConfig()
         self.qdrant = QdrantConfig()
-        self.llm = LLMConfig()
+        self.yandex_cloud = YandexCloudConfig()
