@@ -1,7 +1,11 @@
 import uvicorn
 
+from utils.env import load_env
+
 
 def main() -> None:
+    load_env()
+
     uvicorn.run(
         "app.presentation.api.app:app",
         host="0.0.0.0",
