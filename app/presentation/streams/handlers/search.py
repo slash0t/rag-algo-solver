@@ -1,0 +1,31 @@
+from app.container import APP_CONTAINER
+from app.infrastructure.database.models import ProcessingStatus
+from app.presentation.streams.app import broker, kafka_config
+from app.presentation.streams.schemas.processing import ProcessingMessage
+
+
+@broker.subscriber(kafka_config.topic_search)
+async def search_handler(
+    msg: ProcessingMessage,
+) -> None:
+    processing_repo = APP_CONTAINER.processing_repo()
+    searcher = APP_CONTAINER.searcher()
+
+    processing = await processing_repo.get(msg.processing_id)
+
+    try:
+        similar_tasks = await searcher.search(processing.enriched_text)
+
+        # TODO: save query <-> similar_tasks links via QuerySimilarTask
+
+        processing.status = ProcessingStatus.COMPOSING
+        await processing_repo.update(processing)
+
+        await broker.publish(
+            ProcessingMessage(processing_id=processing.id),
+            topic=kafka_config.topic_compose,
+        )
+    except Exception as e:
+        processing.status = ProcessingStatus.FAILED
+        processing.error_message = str(e)
+        await processing_repo.update(processing)
