@@ -9,12 +9,12 @@ async def search_handler(
     msg: ProcessingMessage,
 ) -> None:
     processing_repo = APP_CONTAINER.processing_repo()
-    searcher = APP_CONTAINER.searcher()
+    # searcher = APP_CONTAINER.searcher()
 
     processing = await processing_repo.get(msg.processing_id)
 
     try:
-        similar_tasks = await searcher.search(processing.enriched_text)
+        # similar_tasks = await searcher.search(processing.enriched_text)
 
         # TODO: save query <-> similar_tasks links via QuerySimilarTask
 
