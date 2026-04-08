@@ -1,15 +1,26 @@
 import uuid
 from datetime import datetime
+from enum import StrEnum
 
 from sqlalchemy import ForeignKey, String, Text, PrimaryKeyConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+
+class ProcessingStatus(StrEnum):
+    PENDING = "pending"
+    ENRICHING = "enriching"
+    SEARCHING = "searching"
+    COMPOSING = "composing"
+    GENERATING = "generating"
+    COMPLETED = "completed"
+    FAILED = "failed"
 
 
 class Base(DeclarativeBase):
     pass
 
 
-class UserModel(Base):
+class User(Base):
     __tablename__ = "users"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
@@ -17,10 +28,10 @@ class UserModel(Base):
     password_hash: Mapped[str] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
-    queries: Mapped[list["QueryModel"]] = relationship(back_populates="user")
+    queries: Mapped[list["Query"]] = relationship(back_populates="user")
 
 
-class TaskModel(Base):
+class Task(Base):
     __tablename__ = "tasks"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
@@ -33,23 +44,47 @@ class TaskModel(Base):
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
 
-class QueryModel(Base):
+class Query(Base):
     __tablename__ = "queries"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
     text: Mapped[str] = mapped_column(Text)
     response_text: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
     responded_at: Mapped[datetime | None] = mapped_column()
 
-    user: Mapped["UserModel"] = relationship(back_populates="queries")
-    similar_tasks: Mapped[list["TaskModel"]] = relationship(
+    user: Mapped["User"] = relationship(back_populates="queries")
+    similar_tasks: Mapped[list["Task"]] = relationship(
         secondary="query_similar_tasks",
+    )
+    processing: Mapped["QueryProcessing | None"] = relationship(
+        back_populates="query",
+        uselist=False,
     )
 
 
-class QuerySimilarTaskModel(Base):
+class QueryProcessing(Base):
+    __tablename__ = "query_processing"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    query_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("queries.id"), unique=True,
+    )
+    original_text: Mapped[str] = mapped_column(Text)
+    enriched_text: Mapped[str | None] = mapped_column(Text)
+    task_context: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(
+        String(50), default=ProcessingStatus.PENDING,
+    )
+    error_message: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    updated_at: Mapped[datetime | None] = mapped_column(onupdate=datetime.utcnow)
+
+    query: Mapped["Query"] = relationship(back_populates="processing")
+
+
+class QuerySimilarTask(Base):
     __tablename__ = "query_similar_tasks"
     __table_args__ = (
         PrimaryKeyConstraint("query_id", "task_id"),
