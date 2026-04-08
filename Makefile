@@ -1,7 +1,10 @@
-.PHONY: run migrate migration infra-up infra-down install lint format
+.PHONY: api streams migrate migration infra-up infra-down install lint format
 
-run:
+api:
 	poetry run uvicorn app.presentation.api.app:app --reload --host 0.0.0.0 --port 8000
+
+streams:
+	poetry run faststream run app.presentation.streams.__main__:stream_app
 
 migrate:
 	poetry run alembic upgrade head

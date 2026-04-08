@@ -24,12 +24,7 @@ async def compose_handler(
         await processing_repo.update(processing)
 
         await broker.publish(
-            ProcessingMessage(processing_id=processing.id),
-            topic=kafka_config.topic_enrich,
-        )
-
-        await broker.publish(
-            ProcessingMessage(processing_id=processing.id),
+            ProcessingMessage(processing_id=processing.id).model_dump(mode="json"),
             topic=kafka_config.topic_generate,
         )
     except Exception as e:

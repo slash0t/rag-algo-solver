@@ -22,7 +22,7 @@ async def search_handler(
         await processing_repo.update(processing)
 
         await broker.publish(
-            ProcessingMessage(processing_id=processing.id),
+            ProcessingMessage(processing_id=processing.id).model_dump(mode="json"),
             topic=kafka_config.topic_compose,
         )
     except Exception as e:
