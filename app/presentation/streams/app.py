@@ -1,9 +1,11 @@
 from faststream import FastStream
-from faststream.kafka import KafkaBroker
 
-from app.settings.kafka import KafkaConfig
+from app.container import APP_CONTAINER
+from utils.env import load_env
 
-kafka_config = KafkaConfig()
-broker = KafkaBroker(kafka_config.bootstrap_servers)
+load_env()
+
+kafka_config = APP_CONTAINER.kafka_config()
+broker = APP_CONTAINER.broker()
 
 stream_app = FastStream(broker)

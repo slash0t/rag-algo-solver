@@ -1,34 +1,26 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
 from app.container import APP_CONTAINER
-from app.domain.repositories.query import QueryRepository
-from app.domain.repositories.query_processing import QueryProcessingRepository
 from app.infrastructure.database.models import (
     ProcessingStatus,
     Query,
     QueryProcessing,
 )
 from app.presentation.api.schemas.query import CreateQueryRequest, CreateQueryResponse
-from app.presentation.streams.app import broker, kafka_config
 from app.presentation.streams.schemas.processing import ProcessingMessage
 
 router = APIRouter(prefix="/queries", tags=["queries"])
 
 
-def get_query_repo() -> QueryRepository:
-    return APP_CONTAINER.query_repo()
-
-
-def get_processing_repo() -> QueryProcessingRepository:
-    return APP_CONTAINER.processing_repo()
-
-
 @router.post("", response_model=CreateQueryResponse)
 async def create_query(
     request: CreateQueryRequest,
-    query_repo: QueryRepository = Depends(get_query_repo),
-    processing_repo: QueryProcessingRepository = Depends(get_processing_repo),
 ) -> CreateQueryResponse:
+    query_repo = APP_CONTAINER.query_repo()
+    processing_repo = APP_CONTAINER.processing_repo()
+    broker = APP_CONTAINER.broker()
+    kafka_config = APP_CONTAINER.kafka_config()
+
     query = Query(
         user_id=None,
         text=request.text,

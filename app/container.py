@@ -1,4 +1,5 @@
 from dependency_injector import containers, providers
+from faststream.kafka import KafkaBroker
 
 from app.infrastructure.adapters.composer.plain_prompt_composer import PlainPromptComposer
 from app.infrastructure.adapters.context.plain_task_context_builder import PlainTaskContextBuilder
@@ -8,6 +9,7 @@ from app.infrastructure.adapters.search.empty_similar_task_searcher import Empty
 from app.infrastructure.database.repositories.query import SQLQueryRepository
 from app.infrastructure.database.repositories.query_processing import SQLQueryProcessingRepository
 from app.infrastructure.database.session import create_async_session_factory
+from app.settings.kafka import KafkaConfig
 from app.settings.postgres import PostgresConfig
 from app.settings.yandex_cloud import YandexCloudConfig
 
@@ -16,6 +18,8 @@ class AppContainer(containers.DeclarativeContainer):
     config = providers.Configuration()
 
     yandex_cloud_config: providers.Singleton[YandexCloudConfig] = providers.Singleton(YandexCloudConfig)
+
+    kafka_config: providers.Singleton[KafkaConfig] = providers.Singleton(KafkaConfig)
 
     postgres_config: providers.Singleton[PostgresConfig] = providers.Singleton(PostgresConfig)
 
@@ -33,6 +37,8 @@ class AppContainer(containers.DeclarativeContainer):
         SQLQueryProcessingRepository,
         session_factory=session_factory,
     )
+
+    broker: providers.Singleton[KafkaBroker] = providers.Singleton(KafkaBroker, kafka_config.provided.bootstrap_servers)
 
     enricher: providers.Singleton[PassthroughQueryEnricher] = providers.Singleton(PassthroughQueryEnricher)
 
