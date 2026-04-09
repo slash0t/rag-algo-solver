@@ -1,11 +1,13 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from app.container import APP_CONTAINER
 from app.infrastructure.database.models import (
     ProcessingStatus,
     Query,
     QueryProcessing,
+    User,
 )
+from app.presentation.api.dependencies.auth import get_current_user
 from app.presentation.api.schemas.query import CreateQueryRequest, CreateQueryResponse
 from app.presentation.streams.schemas.processing import ProcessingMessage
 
@@ -15,6 +17,7 @@ router = APIRouter(prefix="/queries", tags=["queries"])
 @router.post("", response_model=CreateQueryResponse)
 async def create_query(
     request: CreateQueryRequest,
+    current_user: User = Depends(get_current_user),
 ) -> CreateQueryResponse:
     query_repo = APP_CONTAINER.query_repo()
     processing_repo = APP_CONTAINER.processing_repo()
@@ -22,7 +25,7 @@ async def create_query(
     kafka_config = APP_CONTAINER.kafka_config()
 
     query = Query(
-        user_id=None,
+        user_id=current_user.id,
         text=request.text,
     )
     query = await query_repo.create(query)
