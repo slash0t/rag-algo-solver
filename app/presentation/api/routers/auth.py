@@ -15,7 +15,9 @@ from app.presentation.api.schemas.auth import (
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED
+)
 async def register(request: RegisterRequest) -> UserResponse:
     auth_service = APP_CONTAINER.auth_service()
     try:

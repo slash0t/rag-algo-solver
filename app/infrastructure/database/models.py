@@ -69,13 +69,15 @@ class QueryProcessing(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     query_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("queries.id"), unique=True,
+        ForeignKey("queries.id"),
+        unique=True,
     )
     original_text: Mapped[str] = mapped_column(Text)
     enriched_text: Mapped[str | None] = mapped_column(Text)
     task_context: Mapped[str | None] = mapped_column(Text)
     status: Mapped[str] = mapped_column(
-        String(50), default=ProcessingStatus.PENDING,
+        String(50),
+        default=ProcessingStatus.PENDING,
     )
     error_message: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
@@ -86,9 +88,7 @@ class QueryProcessing(Base):
 
 class QuerySimilarTask(Base):
     __tablename__ = "query_similar_tasks"
-    __table_args__ = (
-        PrimaryKeyConstraint("query_id", "task_id"),
-    )
+    __table_args__ = (PrimaryKeyConstraint("query_id", "task_id"),)
 
     query_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("queries.id"))
     task_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("tasks.id"))

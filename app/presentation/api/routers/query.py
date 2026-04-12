@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Query as QueryParam, status
 
 from app.container import APP_CONTAINER
 from app.infrastructure.database.models import (
@@ -8,7 +10,14 @@ from app.infrastructure.database.models import (
     User,
 )
 from app.presentation.api.dependencies.auth import get_current_user
-from app.presentation.api.schemas.query import CreateQueryRequest, CreateQueryResponse
+from app.presentation.api.schemas.query import (
+    CreateQueryRequest,
+    CreateQueryResponse,
+    QueryListItem,
+    QueryPaginatedResponse,
+    QueryResponse,
+)
+from app.presentation.api.schemas.task import SimilarTaskResponse
 from app.presentation.streams.schemas.processing import ProcessingMessage
 
 router = APIRouter(prefix="/queries", tags=["queries"])
@@ -50,3 +59,92 @@ async def create_query(
         processing_id=processing.id,
         status=str(processing.status),
     )
+
+
+@router.get("", response_model=QueryPaginatedResponse)
+async def list_queries(
+    current_user: User = Depends(get_current_user),
+    page: int = QueryParam(default=1, ge=1),
+    size: int = QueryParam(default=10, ge=1, le=100),
+) -> QueryPaginatedResponse:
+    query_repo = APP_CONTAINER.query_repo()
+
+    offset = (page - 1) * size
+    queries, total = await query_repo.list_by_user(current_user.id, offset, size)
+
+    return QueryPaginatedResponse(
+        items=[
+            QueryListItem(
+                id=q.id,
+                text=q.text,
+                response_text=q.response_text,
+                created_at=q.created_at,
+                responded_at=q.responded_at,
+            )
+            for q in queries
+        ],
+        total=total,
+        page=page,
+        size=size,
+    )
+
+
+@router.get("/{query_id}", response_model=QueryResponse)
+async def get_query(
+    query_id: UUID,
+    current_user: User = Depends(get_current_user),
+) -> QueryResponse:
+    query_repo = APP_CONTAINER.query_repo()
+
+    query = await query_repo.get(query_id)
+    if query is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Query not found",
+        )
+
+    if query.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied",
+        )
+
+    return QueryResponse(
+        id=query.id,
+        user_id=query.user_id,
+        text=query.text,
+        response_text=query.response_text,
+        created_at=query.created_at,
+        responded_at=query.responded_at,
+    )
+
+
+@router.get("/{query_id}/similar-tasks", response_model=list[SimilarTaskResponse])
+async def get_similar_tasks(
+    query_id: UUID,
+    current_user: User = Depends(get_current_user),
+) -> list[SimilarTaskResponse]:
+    query_repo = APP_CONTAINER.query_repo()
+
+    query = await query_repo.get_with_similar_tasks(query_id)
+    if query is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Query not found",
+        )
+
+    if query.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied",
+        )
+
+    return [
+        SimilarTaskResponse(
+            id=task.id,
+            title=task.title,
+            task_url=task.task_url,
+            solution_url=task.solution_url,
+        )
+        for task in query.similar_tasks
+    ]
