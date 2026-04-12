@@ -30,7 +30,7 @@ async def create_query(
 ) -> CreateQueryResponse:
     query_repo = APP_CONTAINER.query_repo()
     processing_repo = APP_CONTAINER.processing_repo()
-    broker = APP_CONTAINER.broker()
+    publisher = APP_CONTAINER.publisher()
     kafka_config = APP_CONTAINER.kafka_config()
 
     query = Query(
@@ -46,7 +46,7 @@ async def create_query(
     )
     processing = await processing_repo.create(processing)
 
-    await broker.publish(
+    await publisher.publish(
         ProcessingMessage(processing_id=processing.id).model_dump(mode="json"),
         topic=kafka_config.topic_enrich,
     )

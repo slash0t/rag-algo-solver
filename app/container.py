@@ -11,6 +11,7 @@ from app.infrastructure.adapters.context.plain_task_context_builder import (
 from app.infrastructure.adapters.enricher.passthrough_query_enricher import (
     PassthroughQueryEnricher,
 )
+from app.infrastructure.adapters.publisher.kafka_publisher import KafkaPublisher
 from app.infrastructure.adapters.llm.echo_llm_client import EchoLLMClient
 from app.infrastructure.adapters.search.empty_similar_task_searcher import (
     EmptySimilarTaskSearcher,
@@ -78,6 +79,10 @@ class AppContainer(containers.DeclarativeContainer):
 
     broker: providers.Singleton[KafkaBroker] = providers.Singleton(
         KafkaBroker, kafka_config.provided.bootstrap_servers
+    )
+
+    publisher: providers.Singleton[KafkaPublisher] = providers.Singleton(
+        KafkaPublisher, bootstrap_servers=kafka_config.provided.bootstrap_servers
     )
 
     enricher: providers.Singleton[PassthroughQueryEnricher] = providers.Singleton(
