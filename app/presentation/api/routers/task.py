@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.container import APP_CONTAINER
 from app.infrastructure.database.models import Task, User
-from app.presentation.api.dependencies.auth import get_current_user
+from app.presentation.api.dependencies.auth import get_current_admin
 from app.presentation.api.schemas.task import (
     TaskCreateRequest,
     TaskResponse,
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 @router.post("", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
 async def create_task(
     request: TaskCreateRequest,
-    _current_user: User = Depends(get_current_user),
+    _current_user: User = Depends(get_current_admin),
 ) -> TaskResponse:
     task_repo = APP_CONTAINER.task_repo()
 
@@ -46,7 +46,7 @@ async def create_task(
 @router.get("/{task_id}", response_model=TaskResponse)
 async def get_task(
     task_id: UUID,
-    _current_user: User = Depends(get_current_user),
+    _current_user: User = Depends(get_current_admin),
 ) -> TaskResponse:
     task_repo = APP_CONTAINER.task_repo()
 
@@ -73,7 +73,7 @@ async def get_task(
 async def update_task(
     task_id: UUID,
     request: TaskUpdateRequest,
-    _current_user: User = Depends(get_current_user),
+    _current_user: User = Depends(get_current_admin),
 ) -> TaskResponse:
     task_repo = APP_CONTAINER.task_repo()
 
@@ -108,7 +108,7 @@ async def update_task(
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_task(
     task_id: UUID,
-    _current_user: User = Depends(get_current_user),
+    _current_user: User = Depends(get_current_admin),
 ) -> None:
     task_repo = APP_CONTAINER.task_repo()
 
