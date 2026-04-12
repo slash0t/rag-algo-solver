@@ -18,6 +18,9 @@ venv/
 .env
 env.json
 
+# Node.js (frontend)
+front/node_modules/
+
 # OS
 .DS_Store
 Thumbs.db

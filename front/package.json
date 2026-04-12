@@ -1,0 +1,14 @@
+{
+  "name": "rag-algo-solver-front",
+  "version": "1.0.0",
+  "description": "Frontend for RAG Algo Solver",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "http-proxy-middleware": "^3.0.0"
+  }
+}

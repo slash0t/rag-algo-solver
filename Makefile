@@ -1,4 +1,4 @@
-.PHONY: api streams migrate migration infra-up infra-down install lint format
+.PHONY: api streams migrate migration infra-up infra-down install lint format front
 
 api:
 	poetry run uvicorn app.presentation.api.app:app --reload --host 0.0.0.0 --port 8000
@@ -26,3 +26,6 @@ lint:
 
 format:
 	poetry run ruff format .
+
+front:
+	cd front && npm start

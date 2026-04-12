@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAG Algo Solver</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <!-- Auth pages -->
+  <div id="auth-page" class="page auth-page">
+    <div class="auth-card">
+      <h1 class="auth-title">RAG Algo Solver</h1>
+
+      <!-- Login form -->
+      <form id="login-form" class="auth-form">
+        <h2>Вход</h2>
+        <div class="form-group">
+          <label for="login-username">Имя пользователя</label>
+          <input type="text" id="login-username" required minlength="3" maxlength="50" />
+        </div>
+        <div class="form-group">
+          <label for="login-password">Пароль</label>
+          <input type="password" id="login-password" required minlength="8" maxlength="128" />
+        </div>
+        <div id="login-error" class="form-error"></div>
+        <button type="submit" class="btn btn-primary">Войти</button>
+        <p class="auth-switch">
+          Нет аккаунта? <a href="#" id="show-register">Зарегистрироваться</a>
+        </p>
+      </form>
+
+      <!-- Register form -->
+      <form id="register-form" class="auth-form hidden">
+        <h2>Регистрация</h2>
+        <div class="form-group">
+          <label for="reg-username">Имя пользователя</label>
+          <input type="text" id="reg-username" required minlength="3" maxlength="50" />
+        </div>
+        <div class="form-group">
+          <label for="reg-password">Пароль</label>
+          <input type="password" id="reg-password" required minlength="8" maxlength="128" />
+        </div>
+        <div class="form-group">
+          <label for="reg-password-confirm">Подтвердите пароль</label>
+          <input type="password" id="reg-password-confirm" required minlength="8" maxlength="128" />
+        </div>
+        <div id="register-error" class="form-error"></div>
+        <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+        <p class="auth-switch">
+          Уже есть аккаунт? <a href="#" id="show-login">Войти</a>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main app page -->
+  <div id="app-page" class="page hidden">
+    <div class="app-layout">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h2>RAG Algo Solver</h2>
+          <div class="user-info">
+            <span id="username-display"></span>
+            <button id="logout-btn" class="btn btn-sm btn-outline">Выйти</button>
+          </div>
+        </div>
+        <button id="new-query-btn" class="btn btn-primary btn-block">
+          + Новый запрос
+        </button>
+        <div class="sidebar-section">
+          <h3>История запросов</h3>
+          <div id="query-history" class="query-list">
+            <div class="query-list-empty">Загрузка...</div>
+          </div>
+          <div id="pagination" class="pagination"></div>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <main class="main-content">
+        <!-- State: no query selected -->
+        <div id="state-empty" class="content-state">
+          <div class="empty-state">
+            <div class="empty-icon">?</div>
+            <h2>Выберите запрос или создайте новый</h2>
+            <p>Отправьте алгоритмическую задачу, и система найдёт похожие решения и сгенерирует ответ.</p>
+            <button class="btn btn-primary" onclick="document.getElementById('new-query-btn').click()">
+              Создать запрос
+            </button>
+          </div>
+        </div>
+
+        <!-- State: create new query -->
+        <div id="state-create" class="content-state hidden">
+          <div class="create-query">
+            <h2>Новый запрос</h2>
+            <form id="query-form">
+              <div class="form-group">
+                <label for="query-text">Опишите задачу</label>
+                <textarea id="query-text" rows="8" required
+                  placeholder="Опишите алгоритмическую задачу, которую нужно решить..."></textarea>
+              </div>
+              <div id="query-create-error" class="form-error"></div>
+              <button type="submit" class="btn btn-primary">Отправить</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- State: query processing -->
+        <div id="state-processing" class="content-state hidden">
+          <div class="processing-state">
+            <div class="spinner"></div>
+            <h2>Запрос обрабатывается</h2>
+            <p>Система ищет похожие задачи и генерирует ответ. Это может занять некоторое время.</p>
+            <p class="processing-query-text" id="processing-text"></p>
+          </div>
+        </div>
+
+        <!-- State: query result -->
+        <div id="state-result" class="content-state hidden">
+          <div class="query-result">
+            <div class="result-section">
+              <h3>Ваш запрос</h3>
+              <div id="result-query-text" class="result-text"></div>
+            </div>
+            <div class="result-section">
+              <h3>Ответ</h3>
+              <div id="result-response-text" class="result-text result-response"></div>
+            </div>
+            <div id="similar-tasks-section" class="result-section hidden">
+              <h3>Похожие задачи</h3>
+              <div id="similar-tasks-list" class="similar-tasks"></div>
+            </div>
+            <div class="result-meta">
+              <span id="result-created"></span>
+              <span id="result-responded"></span>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/queries.js"></script>
+</body>
+</html>
